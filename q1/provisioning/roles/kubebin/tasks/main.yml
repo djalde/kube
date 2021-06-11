@@ -1,0 +1,32 @@
+---
+- name: Install prerequisite packages
+  apt:
+    name:
+      - apt-transport-https
+      - curl
+    state: present
+    update_cache: true
+
+- name: Add Kubernetes' GPG key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+    validate_certs: false
+
+- name: Set up main repository
+  apt_repository:
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    filename: kubernetes.list
+    state: present
+
+- name: Install kubelet v{{ kubelet_version }}, kubeadm v{{ kubeadm_version }}, kubectl v{{ kubectl_version }}
+  apt:
+    name:
+      - kubelet={{ kubelet_version }}
+      - kubeadm={{ kubeadm_version }}
+      - kubectl={{ kubectl_version }}
+    state: present
+    update_cache: true
+
+- name: Mark kubelet, kubeadm and kubectl as held back
+  command: apt-mark hold kubelet kubeadm kubectl

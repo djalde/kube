@@ -1,0 +1,56 @@
+---
+- name: Install packages to allow apt to use a repository over HTTPS
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg-agent
+      - software-properties-common
+    state: present
+    update_cache: true
+
+- name: Add Docker’s official GPG key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+    validate_certs: false
+
+- name: Set up stable repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_lsb['codename'] }} stable
+    state: present
+
+- name: Install Docker CE v{{ docker_version | regex_search('\d+\.\d+\.\d+') }} and containerd
+  apt:
+    name:
+      - docker-ce={{ docker_version }}
+      - docker-ce-cli={{ docker_version }}
+      - containerd.io
+    state: present
+    update_cache: true
+
+- name: Create the docker group
+  group:
+    name: docker
+    state: present
+
+- name: Add user to docker group
+  user:
+    name: '{{ ansible_user }}'
+    append: true
+    group: docker
+
+- name: Setup docker daemon cgroup driver
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+
+- name: Create docker.service.d directory
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+  notify: Restart docker
+
+- name: Immediately restart docker
+  meta: flush_handlers

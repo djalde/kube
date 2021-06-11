@@ -1,0 +1,4 @@
+---
+kubelet_version: 1.15.3-00
+kubeadm_version: 1.15.3-00
+kubectl_version: 1.15.3-00

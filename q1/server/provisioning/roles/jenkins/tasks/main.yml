@@ -1,0 +1,25 @@
+---
+- name: Install Java {{ java_version }}
+  apt:
+    name:
+      - openjdk-{{ java_version }}-jdk
+    state: present
+    update_cache: true
+
+- name: Add Jenkins GPG key
+  apt_key:
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+    state: present
+    validate_certs: false
+
+- name: Set up stable repository
+  apt_repository:
+    repo: deb https://pkg.jenkins.io/debian-stable binary/
+    state: present
+
+- name: Install Jenkins {{ jenkins_version }}
+  apt:
+    name:
+      - jenkins={{ jenkins_version }}
+    state: present
+    update_cache: true
